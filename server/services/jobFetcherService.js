@@ -1,7 +1,10 @@
 import axios from 'axios';
 import xml2js from 'xml2js';
 
-const parser = new xml2js.Parser({ explicitArray: false });
+const parser = new xml2js.Parser({
+  explicitArray: false,
+  // strict: false, 
+});
 
 /**
  * Fetch and parse job feed XML from a given URL
@@ -10,7 +13,13 @@ const parser = new xml2js.Parser({ explicitArray: false });
  */
 export const fetchJobsFromFeed = async (feedUrl) => {
   try {
-    const { data: xml } = await axios.get(feedUrl);
+    const { data: xml } = await axios.get(feedUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
+        'Accept': 'application/xml,text/xml;q=0.9,*/*;q=0.8',
+      },
+    });
     const json = await parser.parseStringPromise(xml);
 
     // Extract and normalize jobs
