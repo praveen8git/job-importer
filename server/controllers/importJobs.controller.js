@@ -28,6 +28,12 @@ export const triggerImportNow = async (req, res) => {
       });
 
       await log.save();
+
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('import-complete', log);
+      }
+      
       logs.push(log);
     }
 

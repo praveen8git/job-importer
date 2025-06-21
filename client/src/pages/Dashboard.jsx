@@ -1,11 +1,15 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { getImportLogs, runImportNow } from '../services/api.js';
 import ImportLogTable from '../components/ImportLogTable.jsx';
+import { io } from 'socket.io-client';
 
 const Dashboard = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+
+  const socket = useMemo(() => io('http://localhost:3000'), []);
+
 
   // Fetch logs (memoized)
   const fetchLogs = useCallback(async () => {
@@ -20,6 +24,16 @@ const Dashboard = () => {
   // Trigger fetch on mount
   useEffect(() => {
     fetchLogs().finally(() => setLoading(false));
+    
+    socket.on('import-complete', (log) => {
+    console.log('📡 Real-time update received:', log);
+    fetchLogs(); // Refresh logs
+  });
+
+  return () => {
+    socket.disconnect();
+  };
+
   }, [fetchLogs]);
 
   // Manual import trigger (memoized)

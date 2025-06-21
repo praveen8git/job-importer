@@ -8,8 +8,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec 'node --env-file=.development.env' index.js",
-    "cron": "node --env-file .development.env cron/jobImporterCron.js"
+    "dev": "nodemon --exec \"node --env-file=.development.env\" index.js"
   },
   "dependencies": {
     "axios": "^1.10.0",
@@ -19,7 +18,9 @@
     "express": "^5.1.0",
     "ioredis": "^5.6.1",
     "mongoose": "^8.16.0",
+    "morgan": "^1.10.0",
     "node-cron": "^4.1.1",
+    "socket.io": "^4.8.1",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
