@@ -3,12 +3,14 @@ import { getImportLogs, runImportNow } from '../services/api.js';
 import ImportLogTable from '../components/ImportLogTable.jsx';
 import { io } from 'socket.io-client';
 
+const socket = io('http://localhost:3000'); 
+
 const Dashboard = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
 
-  const socket = useMemo(() => io('http://localhost:3000'), []);
+  // const socket = useMemo(() => io('http://localhost:3000'), []);
 
 
   // Fetch logs (memoized)
@@ -23,17 +25,54 @@ const Dashboard = () => {
 
   // Trigger fetch on mount
   useEffect(() => {
+
     fetchLogs().finally(() => setLoading(false));
-    
-    socket.on('import-complete', (log) => {
-    console.log('📡 Real-time update received:', log);
-    fetchLogs(); // Refresh logs
-  });
 
-  return () => {
-    socket.disconnect();
-  };
+  }, [fetchLogs]);
 
+  // useEffect(() => {
+  //   socket.on('connect', () => {
+  //     console.log('✅ Connected to Socket.IO server');
+  //   });
+
+  //   socket.on('connect_error', (err) => {
+  //     console.error('❌ Socket.IO connection error:', err.message);
+  //   });
+
+  //   socket.on('import-complete', (log) => {
+  //     console.log('📡 Real-time update received:', log);
+  //     fetchLogs(); // Refresh logs
+  //   });
+
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, [])
+  
+  useEffect(() => {
+    const handleConnect = () => {
+      console.log('✅ Connected to Socket.IO server');
+    };
+
+    const handleImportComplete = (log) => {
+      console.log('📡 import-complete received:', log);
+      fetchLogs();
+    };
+
+    const handleError = (err) => {
+      console.error('❌ connect_error:', err.message);
+    };
+
+    socket.on('connect', handleConnect);
+    socket.on('import-complete', handleImportComplete);
+    socket.on('connect_error', handleError);
+
+    // Clean up listeners only (not disconnect)
+    return () => {
+      socket.off('connect', handleConnect);
+      socket.off('import-complete', handleImportComplete);
+      socket.off('connect_error', handleError);
+    };
   }, [fetchLogs]);
 
   // Manual import trigger (memoized)
@@ -62,8 +101,8 @@ const Dashboard = () => {
           onClick={runManualImport}
           disabled={importing || loading}
           className={`px-4 py-2 text-sm rounded text-white transition ${importing || loading
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-blue-600 hover:bg-blue-700'
             }`}
         >
           {importing ? 'Importing...' : 'Run Import Now'}
